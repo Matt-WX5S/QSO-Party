@@ -781,7 +781,7 @@ class Cabrillo < Genericlog
       #puts "#{key} #{k} #{v} #{v.count} #{v[0]}  --  #{v[1]}"
       @headers.map! {|x|
         #puts "Does #{k} match #{x}"
-        if x=~ /^#{k}:/
+        if x=~ /^#{Regexp.escape(k)}:/
           #puts "matched #{k}"
           if v.count > 0
             "#{k}: #{v.pop}"
@@ -805,9 +805,9 @@ class Cabrillo < Genericlog
       #puts "Find #{k}"
       retv = @headers.select{|x|
         #puts "Is it #{x}"
-        x=~ /^#{k}:\s+/
+        x=~ /^#{Regexp.escape(k)}:\s+/
       }
-      retv.each { |x| x.sub(/^#{k}:\s+/,'')}
+      retv.each { |x| x.sub(/^#{Regexp.escape(k)}:\s+/,'')}
     end
   end
 

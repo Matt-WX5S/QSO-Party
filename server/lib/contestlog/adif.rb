@@ -203,9 +203,12 @@ class Adif < Genericlog
         yield nil
       else
         #consume @data until we find <eoh>
-        until (@data[0] =~ /<eoh>/i) do
+        until @data.empty? || @data[0].nil? || (@data[0] =~ /<eoh>/i) do
           h << @data.shift
         end
+        
+        return yield(h) if @data.empty? || @data[0].nil?
+
         #  remove everything until <eoh> and upto but not including next <
         @data[0].sub!(/^(.*)<eoh>[^<]*/i) do
           if defined? $1
@@ -228,12 +231,15 @@ class Adif < Genericlog
   def adif_records
     
     if block_given?
-      until @data.count == 0
+      until @data.empty?
         r = ''
         #consume @data until we find <eor>
-        until (@data[0] =~ /<eor>/i) do
+        until @data.empty? || @data[0].nil? || (@data[0] =~ /<eor>/i) do
           r << @data.shift
         end
+        
+        break if @data.empty? || @data[0].nil?
+
         #  remove everything until <eoh> and upto but not including next <
         @data[0].sub!(/^(.*)<eor>[^<]*/i) do
           if defined? $1
@@ -257,6 +263,7 @@ class Adif < Genericlog
     
     if block_given?
       until r.length == 0
+        last_length = r.length
         key = ''
         value = ''
         format = ''
@@ -269,10 +276,12 @@ class Adif < Genericlog
           len = $2
           ''
         end
-        r.sub!(/^(.{#{len}})/) do
+        r.sub!(/^(.{#{len}})/m) do
           value = $1
           ''
         end
+        
+        break if r.length == last_length
         
         yield(key,value)
         
